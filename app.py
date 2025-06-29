@@ -8,15 +8,45 @@ from sklearn.metrics import mean_squared_error
 import datetime
 import matplotlib.pyplot as plt
 
-# App title
-st.title("Stock Market Price Prediction")
+# Modern dark navy background & light grey buttons styling
+st.markdown("""
+    <style>
+    body {
+        background: linear-gradient(135deg, #0d1b2a, #1b263b);  /* dark navy gradient */
+        color: #ffffff;
+    }
+    .stApp {
+        background: linear-gradient(135deg, #0d1b2a, #1b263b);
+        color: #ffffff;
+    }
+    h1, h2, h3, h4, h5, h6, p, label, span {
+        color: #ffffff !important;
+    }
+    .stButton>button, .stDownloadButton>button {
+        background-color: #d3d3d3;  /* light grey buttons */
+        color: black;
+        border-radius: 8px;
+        padding: 0.5em 1em;
+        border: none;
+    }
+    
+    </style>
+""", unsafe_allow_html=True)
 
-# Sidebar
-st.sidebar.header("User Input")
-selected_stock = st.sidebar.text_input("Enter stock ticker", "AAPL")
-start_date = st.sidebar.date_input("Start date", datetime.date(2020, 1, 1))
-end_date = st.sidebar.date_input("End date", datetime.date.today())
+# Header section with app title and inputs
+with st.container():
+    st.markdown("<div class='header-box'>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center;'>📊 Stock Market Price Prediction</h1>", unsafe_allow_html=True)
 
+    col1, col2, col3 = st.columns([2, 3, 3])
+    with col1:
+        selected_stock = st.text_input("Enter stock ticker", "AAPL")
+    with col2:
+        start_date = st.date_input("Start date", datetime.date(2020, 1, 1))
+    with col3:
+        end_date = st.date_input("End date", datetime.date.today())
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # Fetch stock data
 @st.cache_data
@@ -30,7 +60,6 @@ def fetch_data(ticker, start, end):
     except Exception as e:
         st.error(f"Error fetching data: {e}")
         return None
-
 
 data = fetch_data(selected_stock, start_date, end_date)
 
@@ -88,8 +117,11 @@ if data is not None:
     future_pred = model.predict(future_dates_ordinal)
     future_pred_rounded = np.round(future_pred, 2)
 
-    # Display future predictions
-    future_data = pd.DataFrame({'Date': future_dates, 'Predicted Price': future_pred_rounded})
+    # Create DataFrame with 1D arrays
+    future_data = pd.DataFrame({
+        'Date': list(future_dates),
+        'Predicted Price': future_pred_rounded.flatten()
+    })
     future_data['Date'] = future_data['Date'].dt.strftime('%Y-%m-%d')
     future_data.set_index('Date', inplace=True)
 
@@ -113,3 +145,4 @@ if data is not None:
     )
 else:
     st.write("Please enter a valid stock ticker and date range.")
+
